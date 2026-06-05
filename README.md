@@ -51,7 +51,7 @@ O app é um **PWA estático** (Vite + `vite-plugin-pwa`) e está pronto para rod
 ### Arquivos de configuração
 
 - `.nvmrc` — fixa **Node 20**, mesma versão usada em CI e no Pages.
-- `public/_redirects` — fallback de SPA: qualquer rota desconhecida devolve `/index.html` com `200` (necessário para o React Router).
+- `vite.config.ts` (plugin `spa404Plugin`) — gera `dist/404.html` a partir de `dist/index.html` no build. O Cloudflare Pages serve `404.html` automaticamente para rotas não encontradas → fallback de SPA nativo, sem precisar de `_redirects`.
 - `public/_headers` — cache correto para PWA:
   - `/sw.js` e `/workbox-*.js` → `Cache-Control: max-age=0, must-revalidate` (evita que clientes fiquem com SW antigo).
   - `/manifest.webmanifest` → `Content-Type: application/manifest+json` + no-cache.
@@ -105,7 +105,6 @@ Nenhuma alteração é necessária no Supabase. O `VITE_SUPABASE_URL`/`ANON_KEY`
 sst-docpro/
 ├── public/
 │   ├── _headers         # Cache e security headers (Cloudflare Pages)
-│   ├── _redirects       # SPA fallback → /index.html
 │   ├── pwa-*.png        # Ícones do PWA
 │   └── ...
 ├── supabase/

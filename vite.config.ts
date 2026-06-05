@@ -1,10 +1,26 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { copyFileSync, existsSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+// Generates dist/404.html as a copy of dist/index.html so Cloudflare Pages
+// can serve it as a SPA fallback (no _redirects rule needed).
+function spa404Plugin() {
+  return {
+    name: 'spa-404',
+    closeBundle() {
+      const src = resolve(__dirname, 'dist/index.html')
+      const dest = resolve(__dirname, 'dist/404.html')
+      if (existsSync(src)) copyFileSync(src, dest)
+    },
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
+    spa404Plugin(),
     react(),
     VitePWA({
       registerType: 'prompt',
