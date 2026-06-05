@@ -50,7 +50,6 @@ O app é um **PWA estático** (Vite + `vite-plugin-pwa`) e está pronto para rod
 
 ### Arquivos de configuração
 
-- `wrangler.toml` — `pages_build_output_dir = "dist"` e `build.command = "npm run build"`. Lido pelo `wrangler` e pelo painel do Pages.
 - `.nvmrc` — fixa **Node 20**, mesma versão usada em CI e no Pages.
 - `public/_redirects` — fallback de SPA: qualquer rota desconhecida devolve `/index.html` com `200` (necessário para o React Router).
 - `public/_headers` — cache correto para PWA:
@@ -59,12 +58,14 @@ O app é um **PWA estático** (Vite + `vite-plugin-pwa`) e está pronto para rod
   - `/assets/*` → `max-age=31536000, immutable` (assets com hash do Vite).
   - `/*` → headers de segurança padrão.
 
+> Obs.: este projeto **não usa `wrangler.toml`** quando o deploy é via Git. Toda a configuração de build fica no dashboard do Pages — ter um `wrangler.toml` no repo faz o Pages tentar `wrangler deploy` (modo Workers) em vez de seguir o flow normal de Pages.
+
 ### Passo a passo (dashboard)
 
 1. Suba o repositório para o GitHub/GitLab.
 2. Em **Cloudflare Dashboard → Workers & Pages → Create application → Pages → Connect to Git**, selecione o repo.
 3. Configure o build:
-   - **Framework preset**: *Vite*
+   - **Framework preset**: *Vite* (ou *None*)
    - **Build command**: `npm run build`
    - **Build output directory**: `dist`
    - **Node version**: `20` (detectado via `.nvmrc`)
@@ -124,7 +125,6 @@ sst-docpro/
 │   ├── pages/           # Telas roteadas
 │   ├── store/           # Zustand stores (1 por domínio)
 │   └── types/           # Interfaces TypeScript
-├── wrangler.toml        # Config Cloudflare Pages
 ├── vite.config.ts       # PWA + React
 └── .nvmrc               # Node 20
 ```
