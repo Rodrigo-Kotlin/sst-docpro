@@ -1,0 +1,23 @@
+# PWA: service worker / manifest must never be cached
+# (otherwise clients keep using the old sw.js after a deploy)
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+  Service-Worker-Allowed: /
+
+/workbox-*.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/manifest.webmanifest
+  Content-Type: application/manifest+json
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Hashed assets from Vite: cache aggressively
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Default security headers for the whole site
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()

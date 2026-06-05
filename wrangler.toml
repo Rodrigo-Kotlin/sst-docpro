@@ -1,0 +1,11 @@
+name = "sst-docpro"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "dist"
+
+[build]
+command = "npm run build"
+
+# Static PWA — no Workers / Pages Functions needed.
+# All runtime config (Supabase URL/key) is injected at build time
+# via VITE_* environment variables, configured in the
+# Cloudflare Pages dashboard (Settings → Environment variables).
