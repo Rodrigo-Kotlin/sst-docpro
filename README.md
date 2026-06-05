@@ -23,7 +23,7 @@ Plataforma web para gestão de produção de documentos de **Segurança e Saúde
 
 ## Pré-requisitos
 
-- Node.js 20+ e npm
+- Node.js 22+ e npm
 
 ## Instalação
 
@@ -50,7 +50,7 @@ O app é um **PWA estático** (Vite + `vite-plugin-pwa`) e está pronto para rod
 
 ### Arquivos de configuração
 
-- `.nvmrc` — fixa **Node 20**, mesma versão usada em CI e no Pages.
+- `.nvmrc` — fixa **Node 22** (LTS). Necessário porque o Cloudflare Pages auto-instala a versão mais recente do Wrangler, e a partir da 4.98 ele exige Node 22+.
 - `vite.config.ts` (plugin `spa404Plugin`) — gera `dist/404.html` a partir de `dist/index.html` no build. O Cloudflare Pages serve `404.html` automaticamente para rotas não encontradas → fallback de SPA nativo, sem precisar de `_redirects`.
 - `public/_headers` — cache correto para PWA:
   - `/sw.js` e `/workbox-*.js` → `Cache-Control: max-age=0, must-revalidate` (evita que clientes fiquem com SW antigo).
@@ -68,7 +68,7 @@ O app é um **PWA estático** (Vite + `vite-plugin-pwa`) e está pronto para rod
    - **Framework preset**: *Vite* (ou *None*)
    - **Build command**: `npm run build`
    - **Build output directory**: `dist`
-   - **Node version**: `20` (detectado via `.nvmrc`)
+   - **Node version**: `22` (detectado via `.nvmrc`)
 4. Em **Settings → Environment variables**, adicione (ambientes *Production* e *Preview*):
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
@@ -125,7 +125,7 @@ sst-docpro/
 │   ├── store/           # Zustand stores (1 por domínio)
 │   └── types/           # Interfaces TypeScript
 ├── vite.config.ts       # PWA + React
-└── .nvmrc               # Node 20
+└── .nvmrc               # Node 22 (LTS)
 ```
 
 ---
