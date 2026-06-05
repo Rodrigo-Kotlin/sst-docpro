@@ -192,7 +192,8 @@ export const now = () => new Date().toISOString();
 
 // ─── Company Sync ─────────────────────────────────────────────
 export async function fetchCompanies(): Promise<Company[]> {
-  const { data } = await supabase.from('companies').select('*').order('name');
+  const { data, error } = await supabase.from('companies').select('*').order('name');
+  if (error) throw error;
   return (data ?? []).map(mapCompanyFromRow);
 }
 
@@ -222,7 +223,8 @@ export async function deleteCompany(id: string): Promise<void> {
 
 // ─── Document Type Sync ───────────────────────────────────────
 export async function fetchDocumentTypes(): Promise<DocumentType[]> {
-  const { data } = await supabase.from('document_types').select('*').order('name');
+  const { data, error } = await supabase.from('document_types').select('*').order('name');
+  if (error) throw error;
   return (data ?? []).map(mapDocumentTypeFromRow);
 }
 
@@ -255,7 +257,8 @@ export async function deleteDocumentType(id: string): Promise<void> {
 
 // ─── Checklist Template Sync ──────────────────────────────────
 export async function fetchChecklistTemplates(): Promise<ChecklistTemplate[]> {
-  const { data } = await supabase.from('checklist_templates').select('*').order('order');
+  const { data, error } = await supabase.from('checklist_templates').select('*').order('order');
+  if (error) throw error;
   return (data ?? []).map(mapChecklistTemplateFromRow);
 }
 
@@ -297,7 +300,8 @@ export async function reorderChecklistTemplates(items: { id: string; order: numb
 
 // ─── Production Sync ──────────────────────────────────────────
 export async function fetchProductions(): Promise<ProductionDocument[]> {
-  const { data } = await supabase.from('productions').select('*').order('created_at', { ascending: false });
+  const { data, error } = await supabase.from('productions').select('*').order('created_at', { ascending: false });
+  if (error) throw error;
   return (data ?? []).map(mapProductionFromRow);
 }
 
@@ -331,7 +335,8 @@ export async function deleteProduction(id: string): Promise<void> {
 
 // ─── Production Item Sync ─────────────────────────────────────
 export async function fetchProductionItems(): Promise<ProductionChecklistItem[]> {
-  const { data } = await supabase.from('production_items').select('*').order('order');
+  const { data, error } = await supabase.from('production_items').select('*').order('order');
+  if (error) throw error;
   return (data ?? []).map(mapProductionItemFromRow);
 }
 
@@ -366,7 +371,11 @@ export async function deleteProductionItemsByProduction(productionId: string): P
 
 // ─── Settings Sync ────────────────────────────────────────────
 export async function fetchSettings(): Promise<AppSettings> {
-  const { data } = await supabase.from('settings').select('*').eq('id', 'default').single();
+  const { data, error } = await supabase.from('settings').select('*').eq('id', 'default').single();
+  if (error) {
+    if (error.code === 'PGRST116') return { responsibles: [], categories: [], periodicities: [] };
+    throw error;
+  }
   if (!data) return { responsibles: [], categories: [], periodicities: [] };
   return mapSettingsFromRow(data as SettingsRow);
 }
@@ -410,7 +419,10 @@ export function subscribeToTable(
 
 // ─── Seed Initial Data ────────────────────────────────────────
 export async function seedIfEmpty(): Promise<boolean> {
-  const { count } = await supabase.from('companies').select('*', { count: 'exact', head: true });
+  const { count, error: countError } = await supabase
+    .from('companies')
+    .select('*', { count: 'exact', head: true });
+  if (countError) throw countError;
   if (count && count > 0) return false;
 
   const {
@@ -425,7 +437,7 @@ export async function seedIfEmpty(): Promise<boolean> {
       status: c.status, notes: c.notes, created_at: c.createdAt, updated_at: c.updatedAt,
     }));
     const { error: ce } = await supabase.from('companies').insert(companyRows);
-    if (ce) console.error('Seed companies error:', ce);
+    if (ce) throw new Error(`Seed companies: ${ce.message}`);
   }
 
   if (SEED_DOCUMENT_TYPES.length > 0) {
@@ -436,7 +448,7 @@ export async function seedIfEmpty(): Promise<boolean> {
       created_at: d.createdAt, updated_at: d.updatedAt,
     }));
     const { error: de } = await supabase.from('document_types').insert(docRows);
-    if (de) console.error('Seed document_types error:', de);
+    if (de) throw new Error(`Seed document_types: ${de.message}`);
   }
 
   if (SEED_CHECKLIST_TEMPLATES.length > 0) {
@@ -447,7 +459,7 @@ export async function seedIfEmpty(): Promise<boolean> {
       created_at: t.createdAt, updated_at: t.updatedAt,
     }));
     const { error: te } = await supabase.from('checklist_templates').insert(tmplRows);
-    if (te) console.error('Seed checklist_templates error:', te);
+    if (te) throw new Error(`Seed checklist_templates: ${te.message}`);
   }
 
   if (SEED_PRODUCTIONS.length > 0) {
@@ -459,7 +471,7 @@ export async function seedIfEmpty(): Promise<boolean> {
       created_at: p.createdAt, updated_at: p.updatedAt,
     }));
     const { error: pe } = await supabase.from('productions').insert(prodRows);
-    if (pe) console.error('Seed productions error:', pe);
+    if (pe) throw new Error(`Seed productions: ${pe.message}`);
   }
 
   const seedItems = generateSeedChecklistItems();
@@ -472,7 +484,7 @@ export async function seedIfEmpty(): Promise<boolean> {
       observations: i.observations, created_at: i.createdAt, updated_at: i.updatedAt,
     }));
     const { error: ie } = await supabase.from('production_items').insert(itemRows);
-    if (ie) console.error('Seed production_items error:', ie);
+    if (ie) throw new Error(`Seed production_items: ${ie.message}`);
   }
 
   const { error: se } = await supabase.from('settings').upsert({
@@ -483,7 +495,7 @@ export async function seedIfEmpty(): Promise<boolean> {
     created_at: now(),
     updated_at: now(),
   });
-  if (se) console.error('Seed settings error:', se);
+  if (se) throw new Error(`Seed settings: ${se.message}`);
 
   return true;
 }
